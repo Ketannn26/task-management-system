@@ -1,7 +1,8 @@
 // lib/tasks.ts
 import { Task } from "@/types/task";
 
-const tasks: Task[] = [
+// ✅ CHANGE 1: rename to defaultTasks and make it const
+const defaultTasks: Task[] = [
   {
     id: "1",
     title: "Set up project structure",
@@ -19,7 +20,7 @@ const tasks: Task[] = [
     description: "Create a reusable TaskCard that shows title, priority, status and due date",
     priority: "high",
     status: "done",
-    dueDate: new Date("2026-02-10").toISOString(), // ← only overdue task
+    dueDate: new Date("2026-02-10").toISOString(),
     createdAt: new Date("2026-03-01").toISOString(),
     tags: ["component", "ui"],
     assignedTo: "Bob",
@@ -70,21 +71,25 @@ const tasks: Task[] = [
   },
 ];
 
+// ✅ CHANGE 2: let instead of const so it can be reassigned
+let tasks: Task[] = [...defaultTasks];
+
 // ─── READ ───────────────────────────────────────────────
 
-// Get ALL tasks
 export function getAllTasks(): Task[] {
+  // ✅ CHANGE 3: reset to defaults if empty
+  if (tasks.length === 0) {
+    tasks = [...defaultTasks];
+  }
   return tasks;
 }
 
-// Get a SINGLE task by its ID
 export function getTaskById(id: string): Task | undefined {
   return tasks.find((task) => task.id === id);
 }
 
 // ─── CREATE ─────────────────────────────────────────────
 
-// Add a NEW task to the array
 export function createTask(newTask: Task): Task {
   tasks.push(newTask);
   return newTask;
@@ -92,30 +97,18 @@ export function createTask(newTask: Task): Task {
 
 // ─── UPDATE ─────────────────────────────────────────────
 
-// Update an EXISTING task by ID (only changes the fields you pass in)
 export function updateTask(id: string, updatedFields: Partial<Task>): Task | null {
   const index = tasks.findIndex((task) => task.id === id);
-
-  // If no task found with that ID, return null
   if (index === -1) return null;
-
-  // Merge existing task with new fields
   tasks[index] = { ...tasks[index], ...updatedFields };
-
   return tasks[index];
 }
 
 // ─── DELETE ─────────────────────────────────────────────
 
-// Remove a task by ID
 export function deleteTask(id: string): boolean {
   const index = tasks.findIndex((task) => task.id === id);
-
-  // If no task found, return false
   if (index === -1) return false;
-
-  // Remove 1 item at that index
   tasks.splice(index, 1);
-
   return true;
 }
