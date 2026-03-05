@@ -16,11 +16,11 @@ function useIsMounted() {
 
 const TAILWIND_TO_HEX: Record<string, string> = {
   "bg-violet-500": "#8b5cf6",
-  "bg-pink-500":   "#ec4899",
+  "bg-pink-500": "#ec4899",
   "bg-orange-500": "#f97316",
-  "bg-cyan-500":   "#06b6d4",
+  "bg-cyan-500": "#06b6d4",
   "bg-yellow-500": "#eab308",
-  "bg-rose-500":   "#f43f5e",
+  "bg-rose-500": "#f43f5e",
 };
 
 const KNOWN_COLORS: Record<string, string> = {
@@ -37,13 +37,13 @@ export function StatsSidebar() {
   const total = tasks.length;
 
   // ── Dynamically compute count per column ─────────────
- const columnCounts = columns.map((col) => {
-  const count = tasks.filter((t) => t.status === col.id).length;
-  const color =
-    KNOWN_COLORS[col.id] ??           // default 3 columns by id
-    TAILWIND_TO_HEX[col.color] ;// ✅ custom column by its chosen color
-  return { id: col.id, label: col.label, count, color };
-});
+  const columnCounts = columns.map((col) => {
+    const count = tasks.filter((t) => t.status === col.id).length;
+    const color =
+      KNOWN_COLORS[col.id] ?? // default 3 columns by id
+      TAILWIND_TO_HEX[col.color]; // ✅ custom column by its chosen color
+    return { id: col.id, label: col.label, count, color };
+  });
 
   // ── Completed % based on "done" column only ───────────
   const done = tasks.filter((t) => t.status === "done").length;
@@ -65,8 +65,10 @@ export function StatsSidebar() {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
+  const validColumnIds = new Set(columns.map((c) => c.id));
+
   const upcomingTasks = [...tasks]
-    .filter((t) => t.status !== "done")
+    .filter((t) => t.status !== "done" && validColumnIds.has(t.status))
     .sort(
       (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
     )
