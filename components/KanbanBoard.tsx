@@ -19,6 +19,7 @@ import {
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { setTasks, removeTask, editTask, deleteTask } from "@/store/taskSlice";
 import { reorderColumns } from "@/store/columnSlice";
+import { resetColumns } from "@/store/columnSlice";
 import { useTaskFilters } from "@/hooks/useTaskFilters";
 import { Task, TaskStatus } from "@/types/task";
 import { KanbanColumn } from "@/components/KanbanColumn";
@@ -71,8 +72,9 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   const [addColumnModalOpen, setAddColumnModalOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(setTasks(initialTasks));
-  }, [dispatch, initialTasks]);
+  dispatch(setTasks(initialTasks));  // ✅ fresh server tasks
+  dispatch(resetColumns());          // ✅ reset custom columns too
+}, []);
 
   // ── ADDITION 2: Slider scroll tracking effect ─────────
   useEffect(() => {

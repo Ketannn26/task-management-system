@@ -102,6 +102,9 @@ const columnSlice = createSlice({
       updated.splice(toIndex, 0, moved);
       state.columns = updated;
     },
+    resetColumns(state) {
+      state.columns = DEFAULT_COLUMNS;
+    },
     // ── Delete column (only non-default) ────────────────
     deleteColumn(state, action: PayloadAction<string>) {
       const col = state.columns.find((c) => c.id === action.payload);
@@ -112,6 +115,6 @@ const columnSlice = createSlice({
   },
 });
 
-export const { addColumn, renameColumn, deleteColumn, reorderColumns } =
+export const { addColumn, renameColumn, deleteColumn, reorderColumns, resetColumns } =
   columnSlice.actions;
 export default columnSlice.reducer;

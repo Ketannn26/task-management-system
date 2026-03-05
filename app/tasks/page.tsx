@@ -2,6 +2,9 @@
 import { KanbanBoard } from "@/components/KanbanBoard";
 import { getAllTasks } from "@/lib/tasks";
 
+// ✅ Force fresh data on every request (no caching)
+export const dynamic = "force-dynamic";
+
 export default async function TasksPage() {
   const tasks = getAllTasks();
 
