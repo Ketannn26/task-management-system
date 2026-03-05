@@ -12,8 +12,13 @@ import {
   useSensors,
   closestCorners,
 } from "@dnd-kit/core";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { setTasks, removeTask, editTask, deleteTask } from "@/store/taskSlice";
+import { reorderColumns } from "@/store/columnSlice"; // ← new
 import { useTaskFilters } from "@/hooks/useTaskFilters";
 import { Task, TaskStatus } from "@/types/task";
 import { KanbanColumn } from "@/components/KanbanColumn";
@@ -26,6 +31,7 @@ import { AddColumnModal } from "@/components/AddColumnModal";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { Button } from "@/components/ui/button";
 import { Plus, Columns3 } from "lucide-react";
+import { store } from "@/store/index"; // ← for reading all tasks during drag
 
 function useIsMounted() {
   return useSyncExternalStore(
@@ -43,12 +49,12 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   const dispatch = useAppDispatch();
   const { filteredTasks } = useTaskFilters();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null); // ← new
   const mounted = useIsMounted();
 
-  // ── Read columns from Redux instead of hardcoded array ──
   const columns = useAppSelector((state) => state.columns.columns);
 
-  // ── Modal states ─────────────────────────────────────────
+  // ── Modal states ──────────────────────────────────────
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addModalDefaultStatus, setAddModalDefaultStatus] =
     useState<TaskStatus>("todo");
@@ -56,7 +62,7 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [taskToView, setTaskToView] = useState<Task | null>(null);
-  const [addColumnModalOpen, setAddColumnModalOpen] = useState(false); // ← new
+  const [addColumnModalOpen, setAddColumnModalOpen] = useState(false);
 
   useEffect(() => {
     dispatch(setTasks(initialTasks));
@@ -69,27 +75,50 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   const getColumnTasks = (columnId: string): Task[] =>
     filteredTasks.filter((task) => task.status === columnId);
 
+  // ── Drag Start — detect column vs card ───────────────
   const handleDragStart = (event: DragStartEvent) => {
-    const task = filteredTasks.find((t) => t.id === event.active.id);
+    const { active } = event;
+
+    // ✅ Column drag
+    if (active.data.current?.type === "column") {
+      setActiveColumnId(active.id as string);
+      return;
+    }
+
+    // ✅ Card drag
+    const task = store.getState().tasks.tasks.find((t) => t.id === active.id);
     if (task) setActiveTask(task);
   };
 
+  // ── Drag End — handle column reorder OR card move ────
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveTask(null);
+    setActiveColumnId(null);
     if (!over) return;
 
+    // ✅ Column reorder
+    if (active.data.current?.type === "column") {
+      const fromIndex = columns.findIndex((c) => c.id === active.id);
+      const toIndex = columns.findIndex((c) => c.id === over.id);
+      if (fromIndex !== -1 && toIndex !== -1 && fromIndex !== toIndex) {
+        dispatch(reorderColumns({ fromIndex, toIndex }));
+      }
+      return;
+    }
+
+    // ✅ Card move (existing logic — uses store for all tasks)
     const taskId = active.id as string;
     const overId = over.id as string;
-    const draggedTask = filteredTasks.find((t) => t.id === taskId);
+    const allTasks = store.getState().tasks.tasks;
+    const draggedTask = allTasks.find((t) => t.id === taskId);
     if (!draggedTask) return;
 
-    // ✅ Changed TaskStatus to string — supports custom column IDs
     let newStatus: string;
     if (columns.some((col) => col.id === overId)) {
       newStatus = overId;
     } else {
-      const overTask = filteredTasks.find((t) => t.id === overId);
+      const overTask = allTasks.find((t) => t.id === overId);
       if (!overTask) return;
       newStatus = overTask.status;
     }
@@ -112,9 +141,10 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   };
 
   const handleDelete = async (id: string) => {
-    dispatch(deleteTask(id)); // ← instant UI update
-    await dispatch(removeTask(id)); // ← API call
+    dispatch(deleteTask(id));
+    await dispatch(removeTask(id));
   };
+
   const handleAddTask = (status: TaskStatus) => {
     setAddModalDefaultStatus(status);
     setAddModalOpen(true);
@@ -128,6 +158,7 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
     <div className="flex h-full bg-background overflow-hidden">
       {/* ── Left: board area ── */}
       <div className="flex flex-col flex-1 min-w-0">
+
         {/* ── Top Bar ── */}
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
           <div>
@@ -146,11 +177,8 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
             </p>
           </div>
 
-          {/* ── Action buttons ── */}
           <div className="flex items-center gap-2">
-            {/* Add Column button */}
             <Button
-              variant="outline"
               onClick={() => setAddColumnModalOpen(true)}
               className="gap-2 shadow-sm"
               size="sm"
@@ -158,8 +186,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
               <Columns3 className="h-4 w-4" />
               Add Column
             </Button>
-
-            {/* Add Task button */}
             <Button
               onClick={() => handleAddTask("todo")}
               className="gap-2 shadow-sm"
@@ -184,23 +210,38 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            <div className="flex gap-5 h-full min-w-max items-start">
-              {/* ── Read from Redux columns ── */}
-              {columns.map((column) => (
-                <KanbanColumn
-                  key={column.id}
-                  column={column}
-                  tasks={getColumnTasks(column.id)}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onAddTask={handleAddTask}
-                  onViewTask={handleViewTask}
-                />
-              ))}
-            </div>
+            {/* ✅ SortableContext enables column drag-to-reorder */}
+            <SortableContext
+              items={columns.map((c) => c.id)}
+              strategy={horizontalListSortingStrategy}
+            >
+              <div className="flex gap-5 h-full min-w-max items-start">
+                {columns.map((column) => (
+                  <KanbanColumn
+                    key={column.id}
+                    column={column}
+                    tasks={getColumnTasks(column.id)}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onViewTask={handleViewTask}
+                  />
+                ))}
+              </div>
+            </SortableContext>
 
+            {/* ✅ DragOverlay — shows ghost for both columns and cards */}
             <DragOverlay>
-              {activeTask ? (
+              {activeColumnId ? (
+                <div className="opacity-80 rotate-1 shadow-2xl">
+                  <KanbanColumn
+                    column={columns.find((c) => c.id === activeColumnId)!}
+                    tasks={getColumnTasks(activeColumnId)}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onViewTask={handleViewTask}
+                  />
+                </div>
+              ) : activeTask ? (
                 <KanbanCard
                   task={activeTask}
                   onEdit={handleEdit}
@@ -243,8 +284,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
           handleEdit(task);
         }}
       />
-
-      {/* ── Add Column Modal ── */}
       <AddColumnModal
         open={addColumnModalOpen}
         onClose={() => setAddColumnModalOpen(false)}

@@ -2,6 +2,7 @@
 "use client";
 
 import { Task } from "@/types/task";
+import { useAppSelector } from "@/hooks/redux";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +31,6 @@ interface TaskDetailModalProps {
   onEdit: (task: Task) => void;
 }
 
-// ── Priority config ───────────────────────────────────────
 const priorityConfig = {
   high: {
     label: "High",
@@ -55,7 +55,7 @@ const priorityConfig = {
   },
 };
 
-// ── Status config ─────────────────────────────────────────
+// ── Known status styles for default 3 columns ─────────────
 const statusConfig = {
   todo: {
     label: "Not Started",
@@ -86,6 +86,9 @@ export function TaskDetailModal({
   task,
   onEdit,
 }: TaskDetailModalProps) {
+  // ✅ Read all columns from Redux
+  const columns = useAppSelector((state) => state.columns.columns);
+
   if (!task) return null;
 
   const priority = priorityConfig[
@@ -98,13 +101,60 @@ export function TaskDetailModal({
     dot: "bg-slate-400",
   };
 
-  const status = statusConfig[task.status as keyof typeof statusConfig] ?? {
-    label: task.status,
+  const knownStatus = statusConfig[task.status as keyof typeof statusConfig];
+  const matchingColumn = columns.find((col) => col.id === task.status);
+
+  // ✅ Map column.color (Tailwind bg class) to text/border styles
+  const columnColorMap: Record<
+    string,
+    { color: string; bg: string; border: string }
+  > = {
+    "bg-violet-500": {
+      color: "text-violet-600",
+      bg: "bg-violet-50 dark:bg-violet-900/20",
+      border: "border-violet-200 dark:border-violet-800",
+    },
+    "bg-pink-500": {
+      color: "text-pink-600",
+      bg: "bg-pink-50 dark:bg-pink-900/20",
+      border: "border-pink-200 dark:border-pink-800",
+    },
+    "bg-orange-500": {
+      color: "text-orange-600",
+      bg: "bg-orange-50 dark:bg-orange-900/20",
+      border: "border-orange-200 dark:border-orange-800",
+    },
+    "bg-cyan-500": {
+      color: "text-cyan-600",
+      bg: "bg-cyan-50 dark:bg-cyan-900/20",
+      border: "border-cyan-200 dark:border-cyan-800",
+    },
+    "bg-yellow-500": {
+      color: "text-yellow-600",
+      bg: "bg-yellow-50 dark:bg-yellow-900/20",
+      border: "border-yellow-200 dark:border-yellow-800",
+    },
+    "bg-rose-500": {
+      color: "text-rose-600",
+      bg: "bg-rose-50 dark:bg-rose-900/20",
+      border: "border-rose-200 dark:border-rose-800",
+    },
+  };
+
+  const colStyle = columnColorMap[matchingColumn?.color ?? ""] ?? {
     color: "text-slate-600",
     bg: "bg-slate-50 dark:bg-slate-800/50",
     border: "border-slate-200 dark:border-slate-700",
-    icon: Circle,
   };
+
+  const status = knownStatus ?? {
+    label: matchingColumn?.label ?? task.status,
+    color: colStyle.color, // ✅ real color from column
+    bg: colStyle.bg, // ✅ real bg from column
+    border: colStyle.border, // ✅ real border from column
+    icon: LayoutGrid,
+  };
+
   const StatusIcon = status.icon;
 
   const now = new Date();
@@ -162,18 +212,6 @@ export function TaskDetailModal({
                   </DialogDescription>
                 </div>
               </div>
-
-              {/* Edit + Delete buttons */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8 rounded-lg"
-                  onClick={handleEdit}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Button>
-              </div>
             </div>
           </DialogHeader>
         </div>
@@ -198,7 +236,7 @@ export function TaskDetailModal({
             </div>
           )}
 
-          {/* ── Priority + Status — side by side ── */}
+          {/* ── Priority + Status ── */}
           <div className="grid grid-cols-2 gap-4">
             {/* Priority */}
             <div className="space-y-1.5">
@@ -216,7 +254,7 @@ export function TaskDetailModal({
               </div>
             </div>
 
-            {/* Status */}
+            {/* ✅ Status — shows custom column name correctly */}
             <div className="space-y-1.5">
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
                 <LayoutGrid className="h-3 w-3" />
@@ -231,7 +269,7 @@ export function TaskDetailModal({
             </div>
           </div>
 
-          {/* ── Due Date + Assigned To — side by side ── */}
+          {/* ── Due Date + Assigned To ── */}
           <div className="grid grid-cols-2 gap-4">
             {/* Due Date */}
             <div className="space-y-1.5">
@@ -262,7 +300,6 @@ export function TaskDetailModal({
                 Assigned To
               </p>
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 text-sm font-medium text-foreground">
-                {/* Avatar circle with initial */}
                 <span className="h-5 w-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0 uppercase">
                   {task.assignedTo?.[0] ?? "?"}
                 </span>

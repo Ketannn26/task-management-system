@@ -88,14 +88,20 @@ const columnSlice = createSlice({
     },
 
     // ── Rename existing column ──────────────────────────
-    renameColumn(
-      state,
-      action: PayloadAction<{ id: string; label: string }>
-    ) {
+    renameColumn(state, action: PayloadAction<{ id: string; label: string }>) {
       const col = state.columns.find((c) => c.id === action.payload.id);
       if (col) col.label = action.payload.label;
     },
-
+    reorderColumns: (
+      state,
+      action: PayloadAction<{ fromIndex: number; toIndex: number }>,
+    ) => {
+      const { fromIndex, toIndex } = action.payload;
+      const updated = [...state.columns];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(toIndex, 0, moved);
+      state.columns = updated;
+    },
     // ── Delete column (only non-default) ────────────────
     deleteColumn(state, action: PayloadAction<string>) {
       const col = state.columns.find((c) => c.id === action.payload);
@@ -106,5 +112,6 @@ const columnSlice = createSlice({
   },
 });
 
-export const { addColumn, renameColumn, deleteColumn } = columnSlice.actions;
+export const { addColumn, renameColumn, deleteColumn, reorderColumns } =
+  columnSlice.actions;
 export default columnSlice.reducer;

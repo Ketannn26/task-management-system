@@ -14,22 +14,20 @@ function useIsMounted() {
   );
 }
 
-// ── Fixed colors for known statuses ──────────────────────
+const TAILWIND_TO_HEX: Record<string, string> = {
+  "bg-violet-500": "#8b5cf6",
+  "bg-pink-500":   "#ec4899",
+  "bg-orange-500": "#f97316",
+  "bg-cyan-500":   "#06b6d4",
+  "bg-yellow-500": "#eab308",
+  "bg-rose-500":   "#f43f5e",
+};
+
 const KNOWN_COLORS: Record<string, string> = {
   todo: "#94a3b8",
   "in-progress": "#3b82f6",
   done: "#10b981",
 };
-
-// Extra colors for custom columns
-const EXTRA_COLORS = [
-  "#8b5cf6",
-  "#ec4899",
-  "#f97316",
-  "#06b6d4",
-  "#eab308",
-  "#f43f5e",
-];
 
 export function StatsSidebar() {
   const mounted = useIsMounted();
@@ -39,17 +37,13 @@ export function StatsSidebar() {
   const total = tasks.length;
 
   // ── Dynamically compute count per column ─────────────
-  const columnCounts = columns.map((col, index) => {
-    const count = tasks.filter((t) => t.status === col.id).length;
-    const color =
-      KNOWN_COLORS[col.id] ?? EXTRA_COLORS[index % EXTRA_COLORS.length];
-    return {
-      id: col.id,
-      label: col.label,
-      count,
-      color,
-    };
-  });
+ const columnCounts = columns.map((col) => {
+  const count = tasks.filter((t) => t.status === col.id).length;
+  const color =
+    KNOWN_COLORS[col.id] ??           // default 3 columns by id
+    TAILWIND_TO_HEX[col.color] ;// ✅ custom column by its chosen color
+  return { id: col.id, label: col.label, count, color };
+});
 
   // ── Completed % based on "done" column only ───────────
   const done = tasks.filter((t) => t.status === "done").length;
