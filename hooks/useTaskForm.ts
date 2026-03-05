@@ -1,14 +1,13 @@
 // hooks/useTaskForm.ts
 import { useState, useCallback } from "react";
-import { TaskPriority, TaskStatus } from "@/types/task";
+import { TaskPriority } from "@/types/task"; // ← remove TaskStatus import
 
 // The shape of our form values
-// We use Partial<Task> because not all fields are filled immediately
 type TaskFormValues = {
   title: string;
   description: string;
   priority: TaskPriority;
-  status: TaskStatus;
+  status: string; // ← was TaskStatus, now plain string
   dueDate: string;
   tags: string[];
   assignedTo: string;
@@ -42,7 +41,6 @@ const defaultValues: TaskFormValues = {
 export function useTaskForm(
   initialValues?: Partial<TaskFormValues>,
 ): UseTaskFormReturn {
-  // Merge default values with any initial values passed in
   const [values, setValues] = useState<TaskFormValues>({
     ...defaultValues,
     ...initialValues,
@@ -54,8 +52,6 @@ export function useTaskForm(
   const handleChange = useCallback(
     <K extends keyof TaskFormValues>(field: K, value: TaskFormValues[K]) => {
       setValues((prev) => ({ ...prev, [field]: value }));
-
-      // Clear the error for this field when user starts typing
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     },
     [],
@@ -65,33 +61,27 @@ export function useTaskForm(
   const validate = useCallback((): boolean => {
     const newErrors: TaskFormErrors = {};
 
-    // Title is required
     if (!values.title.trim()) {
       newErrors.title = "Title is required";
     }
 
-    // Due date is required and must be valid
     if (!values.dueDate) {
       newErrors.dueDate = "Due date is required";
     } else if (isNaN(new Date(values.dueDate).getTime())) {
       newErrors.dueDate = "Please enter a valid date";
     }
 
-    // Assigned to is required
     if (!values.assignedTo.trim()) {
       newErrors.assignedTo = "Please assign this task to someone";
     }
 
     setErrors(newErrors);
-
-    // Return true if no errors (form is valid)
     return Object.keys(newErrors).length === 0;
   }, [values]);
 
   // ── Handle form submission ────────────────────────────────
   const handleSubmit = useCallback(
     (onSubmit: (values: TaskFormValues) => void) => {
-      // Only call onSubmit if validation passes
       if (validate()) {
         onSubmit(values);
       }

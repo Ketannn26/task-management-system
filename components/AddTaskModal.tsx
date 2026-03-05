@@ -2,10 +2,10 @@
 "use client";
 
 import { useState } from "react";
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { createTask } from "@/store/taskSlice";
 import { useTaskForm } from "@/hooks/useTaskForm";
-import { TaskPriority, TaskStatus } from "@/types/task";
+import { TaskPriority } from "@/types/task";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +39,7 @@ import {
 interface AddTaskModalProps {
   open: boolean;
   onClose: () => void;
-  defaultStatus?: TaskStatus;
+  defaultStatus?: string;
 }
 
 export function AddTaskModal({
@@ -49,6 +49,7 @@ export function AddTaskModal({
 }: AddTaskModalProps) {
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const columns = useAppSelector((state) => state.columns.columns);
 
   const { values, errors, handleChange, handleSubmit, reset } = useTaskForm({
     status: defaultStatus,
@@ -73,10 +74,7 @@ export function AddTaskModal({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent
-        // ✅ Much wider modal — max-w-2xl instead of max-w-lg
-        className="w-full max-w-2xl p-0 gap-0 overflow-hidden"
-      >
+      <DialogContent className="w-full max-w-2xl p-0 gap-0 overflow-hidden">
 
         {/* ── Header ── */}
         <div className="bg-linear-to-br from-primary/10 via-primary/5 to-transparent border-b px-6 py-5">
@@ -118,7 +116,7 @@ export function AddTaskModal({
               className={cn(
                 "h-11 text-sm",
                 errors.title &&
-                  "border-destructive focus-visible:ring-destructive"
+                  "border-destructive focus-visible:ring-destructive",
               )}
               autoFocus
             />
@@ -149,7 +147,7 @@ export function AddTaskModal({
           {/* ── Priority and Status — side by side ── */}
           <div className="grid grid-cols-2 gap-5">
 
-            {/* Priority dropdown */}
+            {/* ✅ Priority dropdown — uses values.priority */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-semibold">
                 <Flag className="h-3.5 w-3.5 text-muted-foreground" />
@@ -187,7 +185,7 @@ export function AddTaskModal({
               </Select>
             </div>
 
-            {/* Status dropdown */}
+            {/* ✅ Status dropdown — dynamic from Redux columns */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-semibold">
                 <LayoutGrid className="h-3.5 w-3.5 text-muted-foreground" />
@@ -195,36 +193,26 @@ export function AddTaskModal({
               </Label>
               <Select
                 value={values.status}
-                onValueChange={(v) =>
-                  handleChange("status", v as TaskStatus)
-                }
+                onValueChange={(v) => handleChange("status", v)}
               >
                 <SelectTrigger className="h-11 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-slate-400 shrink-0" />
-                      Not Started
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="in-progress">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
-                      In Progress
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="done">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                      Completed
-                    </div>
-                  </SelectItem>
+                  {/* ✅ All columns including custom ones */}
+                  {columns.map((col) => (
+                    <SelectItem key={col.id} value={col.id}>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`h-2 w-2 rounded-full shrink-0 ${col.color}`}
+                        />
+                        {col.label}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-
           </div>
 
           {/* ── Due Date and Assigned To — side by side ── */}
@@ -248,7 +236,7 @@ export function AddTaskModal({
                 className={cn(
                   "h-11 text-sm",
                   errors.dueDate &&
-                    "border-destructive focus-visible:ring-destructive"
+                    "border-destructive focus-visible:ring-destructive",
                 )}
               />
               {errors.dueDate && (
@@ -274,7 +262,7 @@ export function AddTaskModal({
                 className={cn(
                   "h-11 text-sm",
                   errors.assignedTo &&
-                    "border-destructive focus-visible:ring-destructive"
+                    "border-destructive focus-visible:ring-destructive",
                 )}
               />
               {errors.assignedTo && (
@@ -283,7 +271,6 @@ export function AddTaskModal({
                 </p>
               )}
             </div>
-
           </div>
 
           {/* ── Tags ── */}
@@ -308,12 +295,11 @@ export function AddTaskModal({
                   e.target.value
                     .split(",")
                     .map((t) => t.trim())
-                    .filter(Boolean)
+                    .filter(Boolean),
                 )
               }
               className="h-11 text-sm"
             />
-            {/* Live tag preview */}
             {values.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {values.tags.map((tag) => (
@@ -327,7 +313,6 @@ export function AddTaskModal({
               </div>
             )}
           </div>
-
         </div>
 
         {/* ── Footer ── */}

@@ -2,10 +2,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAppDispatch } from "@/hooks/redux";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux"; // ← add useAppSelector
 import { editTask } from "@/store/taskSlice";
 import { useTaskForm } from "@/hooks/useTaskForm";
-import { Task, TaskPriority, TaskStatus } from "@/types/task";
+import { Task, TaskPriority } from "@/types/task"; // ← remove TaskStatus
 import {
   Dialog,
   DialogContent,
@@ -39,20 +39,16 @@ import {
 interface EditTaskModalProps {
   open: boolean;
   onClose: () => void;
-  task: Task | null; // the task being edited
+  task: Task | null;
 }
 
-export function EditTaskModal({
-  open,
-  onClose,
-  task,
-}: EditTaskModalProps) {
+export function EditTaskModal({ open, onClose, task }: EditTaskModalProps) {
   const dispatch = useAppDispatch();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const columns = useAppSelector((state) => state.columns.columns); // ← add this
 
   const { values, errors, handleChange, handleSubmit, reset } = useTaskForm();
 
-  // ── When task changes, fill the form with its values ─────
   useEffect(() => {
     if (task) {
       handleChange("title", task.title);
@@ -66,15 +62,13 @@ export function EditTaskModal({
       handleChange("assignedTo", task.assignedTo);
       handleChange("tags", task.tags);
     }
-  }, [task,handleChange]); // runs every time a different task is opened
+  }, [task, handleChange]);
 
-  // ── Close and reset ───────────────────────────────────────
   const handleClose = () => {
     reset();
     onClose();
   };
 
-  // ── Submit ────────────────────────────────────────────────
   const onSubmit = () => {
     if (!task) return;
     handleSubmit(async (formValues) => {
@@ -163,7 +157,7 @@ export function EditTaskModal({
           {/* ── Priority and Status — side by side ── */}
           <div className="grid grid-cols-2 gap-5">
 
-            {/* Priority */}
+            {/* Priority — unchanged */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-semibold">
                 <Flag className="h-3.5 w-3.5 text-muted-foreground" />
@@ -201,7 +195,7 @@ export function EditTaskModal({
               </Select>
             </div>
 
-            {/* Status */}
+            {/* ✅ Status — now dynamic from Redux columns */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-semibold">
                 <LayoutGrid className="h-3.5 w-3.5 text-muted-foreground" />
@@ -209,36 +203,26 @@ export function EditTaskModal({
               </Label>
               <Select
                 value={values.status}
-                onValueChange={(v) =>
-                  handleChange("status", v as TaskStatus)
-                }
+                onValueChange={(v) => handleChange("status", v)} // ← removed TaskStatus cast
               >
                 <SelectTrigger className="h-11 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-slate-400 shrink-0" />
-                      Not Started
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="in-progress">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-blue-500 shrink-0" />
-                      In Progress
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="done">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                      Completed
-                    </div>
-                  </SelectItem>
+                  {/* ✅ Dynamic — all columns including custom ones */}
+                  {columns.map((col) => (
+                    <SelectItem key={col.id} value={col.id}>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`h-2 w-2 rounded-full shrink-0 ${col.color}`}
+                        />
+                        {col.label}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-
           </div>
 
           {/* ── Due Date and Assigned To — side by side ── */}
@@ -266,9 +250,7 @@ export function EditTaskModal({
                 )}
               />
               {errors.dueDate && (
-                <p className="text-xs text-destructive">
-                  ⚠ {errors.dueDate}
-                </p>
+                <p className="text-xs text-destructive">⚠ {errors.dueDate}</p>
               )}
             </div>
 
@@ -299,7 +281,6 @@ export function EditTaskModal({
                 </p>
               )}
             </div>
-
           </div>
 
           {/* ── Tags ── */}
@@ -329,7 +310,6 @@ export function EditTaskModal({
               }
               className="h-11 text-sm"
             />
-            {/* Live tag preview */}
             {values.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {values.tags.map((tag) => (
@@ -343,7 +323,6 @@ export function EditTaskModal({
               </div>
             )}
           </div>
-
         </div>
 
         {/* ── Footer ── */}
