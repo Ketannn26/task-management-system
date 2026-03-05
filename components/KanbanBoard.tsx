@@ -1,7 +1,7 @@
 // components/KanbanBoard.tsx
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useRef, useSyncExternalStore } from "react"; // ← add useRef
 import {
   DndContext,
   DragEndEvent,
@@ -18,7 +18,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { setTasks, removeTask, editTask, deleteTask } from "@/store/taskSlice";
-import { reorderColumns } from "@/store/columnSlice"; // ← new
+import { reorderColumns } from "@/store/columnSlice";
 import { useTaskFilters } from "@/hooks/useTaskFilters";
 import { Task, TaskStatus } from "@/types/task";
 import { KanbanColumn } from "@/components/KanbanColumn";
@@ -31,7 +31,7 @@ import { AddColumnModal } from "@/components/AddColumnModal";
 import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { Button } from "@/components/ui/button";
 import { Plus, Columns3 } from "lucide-react";
-import { store } from "@/store/index"; // ← for reading all tasks during drag
+import { store } from "@/store/index";
 
 function useIsMounted() {
   return useSyncExternalStore(
@@ -49,10 +49,16 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   const dispatch = useAppDispatch();
   const { filteredTasks } = useTaskFilters();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [activeColumnId, setActiveColumnId] = useState<string | null>(null); // ← new
+  const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const mounted = useIsMounted();
 
   const columns = useAppSelector((state) => state.columns.columns);
+
+  // ── ADDITION 1: Slider state + ref ───────────────────
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [scrollPercent, setScrollPercent] = useState(0);
+  const [showSlider, setShowSlider] = useState(false);
+  // ─────────────────────────────────────────────────────
 
   // ── Modal states ──────────────────────────────────────
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -68,6 +74,40 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
     dispatch(setTasks(initialTasks));
   }, [dispatch, initialTasks]);
 
+  // ── ADDITION 2: Slider scroll tracking effect ─────────
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0) {
+        setShowSlider(false);
+        return;
+      }
+      setShowSlider(true);
+      setScrollPercent((el.scrollLeft / maxScroll) * 100);
+    };
+
+    handleScroll(); // check on mount
+    el.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      el.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [columns]); // ← re-check when columns change (add/remove column)
+  // ─────────────────────────────────────────────────────
+
+  // ── ADDITION 3: Slider drag handler ──────────────────
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    el.scrollLeft = (Number(e.target.value) / 100) * maxScroll;
+  };
+  // ─────────────────────────────────────────────────────
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
@@ -75,29 +115,22 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   const getColumnTasks = (columnId: string): Task[] =>
     filteredTasks.filter((task) => task.status === columnId);
 
-  // ── Drag Start — detect column vs card ───────────────
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
-
-    // ✅ Column drag
     if (active.data.current?.type === "column") {
       setActiveColumnId(active.id as string);
       return;
     }
-
-    // ✅ Card drag
     const task = store.getState().tasks.tasks.find((t) => t.id === active.id);
     if (task) setActiveTask(task);
   };
 
-  // ── Drag End — handle column reorder OR card move ────
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveTask(null);
     setActiveColumnId(null);
     if (!over) return;
 
-    // ✅ Column reorder
     if (active.data.current?.type === "column") {
       const fromIndex = columns.findIndex((c) => c.id === active.id);
       const toIndex = columns.findIndex((c) => c.id === over.id);
@@ -107,7 +140,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
       return;
     }
 
-    // ✅ Card move (existing logic — uses store for all tasks)
     const taskId = active.id as string;
     const overId = over.id as string;
     const allTasks = store.getState().tasks.tasks;
@@ -156,9 +188,7 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
 
   return (
     <div className="flex h-full bg-background overflow-hidden">
-      {/* ── Left: board area ── */}
       <div className="flex flex-col flex-1 min-w-0">
-
         {/* ── Top Bar ── */}
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
           <div>
@@ -176,7 +206,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
               )}
             </p>
           </div>
-
           <div className="flex items-center gap-2">
             <Button
               onClick={() => setAddColumnModalOpen(true)}
@@ -202,15 +231,49 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
           <TaskFiltersBar />
         </div>
 
+        {/* ── ADDITION 4: Horizontal scroll slider ─────── */}
+        {showSlider && (
+          <div className="px-6 pt-2 pb-1 bg-background shrink-0">
+            {" "}
+            {/* ← pb-3 → pt-2 pb-1 */}
+            <div className="relative flex items-center h-4">
+              {/* Track */}
+              <div className="w-full h-0.5 rounded-full bg-border">
+                <div
+                  className="h-full rounded-full bg-primary transition-none"
+                  style={{ width: `${scrollPercent}%` }}
+                />
+              </div>
+
+              {/* Thumb */}
+              <div
+                className="absolute h-3 w-3 rounded-full bg-primary shadow-sm border-2 border-background pointer-events-none"
+                style={{ left: `calc(${scrollPercent}% - 6px)` }}
+              />
+
+              {/* Invisible input */}
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={scrollPercent}
+                onChange={handleSliderChange}
+                className="absolute inset-0 w-full opacity-0 cursor-ew-resize"
+              />
+            </div>
+          </div>
+        )}
         {/* ── Kanban columns ── */}
-        <div className="flex-1 overflow-x-auto p-6">
+        <div
+          ref={scrollContainerRef}
+          className={`flex-1 overflow-x-auto ${showSlider ? "pt-2 px-6 pb-6" : "p-6"}`}
+        >
           <DndContext
             sensors={sensors}
             collisionDetection={closestCorners}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
-            {/* ✅ SortableContext enables column drag-to-reorder */}
             <SortableContext
               items={columns.map((c) => c.id)}
               strategy={horizontalListSortingStrategy}
@@ -229,7 +292,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
               </div>
             </SortableContext>
 
-            {/* ✅ DragOverlay — shows ghost for both columns and cards */}
             <DragOverlay>
               {activeColumnId ? (
                 <div className="opacity-80 rotate-1 shadow-2xl">
@@ -255,7 +317,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
         </div>
       </div>
 
-      {/* ── Right: stats sidebar ── */}
       <StatsSidebar />
 
       {/* ── Modals ── */}
