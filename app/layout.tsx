@@ -13,8 +13,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "TaskFlow — Task Management",
-  description: "Manage your tasks efficiently with TaskFlow",
+  title: "Centripe Flow",
+  description: "Manage your tasks efficiently with Centripe Flow",
 };
 
 export default function RootLayout({
