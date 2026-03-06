@@ -1,4 +1,3 @@
-// context/ThemeContext.tsx
 "use client";
 
 import {
@@ -21,7 +20,6 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // ✅ Read localStorage directly as initial value (no useEffect needed)
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     if (typeof window !== "undefined") {
       const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
@@ -33,8 +31,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
   const [compactView, setCompactView] = useState<boolean>(false);
 
-  // ✅ Keep this useEffect — it UPDATES external systems (DOM + localStorage)
-  // This is exactly what useEffect is designed for
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     if (theme === "dark") {
@@ -59,14 +55,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <ThemeContext.Provider
-      value={{
-        theme,
-        toggleTheme,
-        sidebarOpen,
-        toggleSidebar,
-        compactView,
-        toggleCompactView,
-      }}
+      value={{ theme, toggleTheme, sidebarOpen, toggleSidebar, compactView, toggleCompactView }}
     >
       {children}
     </ThemeContext.Provider>

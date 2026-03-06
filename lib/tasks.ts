@@ -1,7 +1,5 @@
-// lib/tasks.ts
 import { Task } from "@/types/task";
 
-// ✅ CHANGE 1: rename to defaultTasks and make it const
 const defaultTasks: Task[] = [
   {
     id: "1",
@@ -71,13 +69,9 @@ const defaultTasks: Task[] = [
   },
 ];
 
-// ✅ CHANGE 2: let instead of const so it can be reassigned
 let tasks: Task[] = [...defaultTasks];
 
-// ─── READ ───────────────────────────────────────────────
-
 export function getAllTasks(): Task[] {
-  // ✅ CHANGE 3: reset to defaults if empty
   if (tasks.length === 0) {
     tasks = [...defaultTasks];
   }
@@ -88,14 +82,10 @@ export function getTaskById(id: string): Task | undefined {
   return tasks.find((task) => task.id === id);
 }
 
-// ─── CREATE ─────────────────────────────────────────────
-
 export function createTask(newTask: Task): Task {
   tasks.push(newTask);
   return newTask;
 }
-
-// ─── UPDATE ─────────────────────────────────────────────
 
 export function updateTask(id: string, updatedFields: Partial<Task>): Task | null {
   const index = tasks.findIndex((task) => task.id === id);
@@ -103,8 +93,6 @@ export function updateTask(id: string, updatedFields: Partial<Task>): Task | nul
   tasks[index] = { ...tasks[index], ...updatedFields };
   return tasks[index];
 }
-
-// ─── DELETE ─────────────────────────────────────────────
 
 export function deleteTask(id: string): boolean {
   const index = tasks.findIndex((task) => task.id === id);

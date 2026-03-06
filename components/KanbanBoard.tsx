@@ -1,7 +1,6 @@
-// components/KanbanBoard.tsx
 "use client";
 
-import { useEffect, useState, useRef, useSyncExternalStore } from "react"; // ← add useRef
+import { useEffect, useState, useRef, useSyncExternalStore } from "react";
 import {
   DndContext,
   DragEndEvent,
@@ -18,8 +17,7 @@ import {
 } from "@dnd-kit/sortable";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
 import { setTasks, removeTask, editTask, deleteTask } from "@/store/taskSlice";
-import { reorderColumns } from "@/store/columnSlice";
-import { resetColumns } from "@/store/columnSlice";
+import { reorderColumns, resetColumns } from "@/store/columnSlice";
 import { useTaskFilters } from "@/hooks/useTaskFilters";
 import { Task, TaskStatus } from "@/types/task";
 import { KanbanColumn } from "@/components/KanbanColumn";
@@ -52,31 +50,26 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const mounted = useIsMounted();
-
   const columns = useAppSelector((state) => state.columns.columns);
 
-  // ── ADDITION 1: Slider state + ref ───────────────────
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollPercent, setScrollPercent] = useState(0);
   const [showSlider, setShowSlider] = useState(false);
-  // ─────────────────────────────────────────────────────
 
-  // ── Modal states ──────────────────────────────────────
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [addModalDefaultStatus, setAddModalDefaultStatus] =
-    useState<TaskStatus>("todo");
+  const [addModalDefaultStatus, setAddModalDefaultStatus] = useState<TaskStatus>("todo");
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [taskToView, setTaskToView] = useState<Task | null>(null);
   const [addColumnModalOpen, setAddColumnModalOpen] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-  dispatch(setTasks(initialTasks));  // ✅ fresh server tasks
-  dispatch(resetColumns());          // ✅ reset custom columns too
-}, []);
+    dispatch(setTasks(initialTasks));
+    dispatch(resetColumns());
+  }, []);
 
-  // ── ADDITION 2: Slider scroll tracking effect ─────────
   useEffect(() => {
     const el = scrollContainerRef.current;
     if (!el) return;
@@ -91,24 +84,21 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
       setScrollPercent((el.scrollLeft / maxScroll) * 100);
     };
 
-    handleScroll(); // check on mount
+    handleScroll();
     el.addEventListener("scroll", handleScroll);
     window.addEventListener("resize", handleScroll);
     return () => {
       el.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
     };
-  }, [columns]); // ← re-check when columns change (add/remove column)
-  // ─────────────────────────────────────────────────────
+  }, [columns]);
 
-  // ── ADDITION 3: Slider drag handler ──────────────────
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const el = scrollContainerRef.current;
     if (!el) return;
     const maxScroll = el.scrollWidth - el.clientWidth;
     el.scrollLeft = (Number(e.target.value) / 100) * maxScroll;
   };
-  // ─────────────────────────────────────────────────────
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -158,9 +148,7 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
     }
 
     if (draggedTask.status !== newStatus) {
-      dispatch(
-        editTask({ id: taskId, updates: { status: newStatus as TaskStatus } }),
-      );
+      dispatch(editTask({ id: taskId, updates: { status: newStatus as TaskStatus } }));
     }
   };
 
@@ -191,7 +179,7 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   return (
     <div className="flex h-full bg-background overflow-hidden">
       <div className="flex flex-col flex-1 min-w-0">
-        {/* ── Top Bar ── */}
+
         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Board</h1>
@@ -209,51 +197,34 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              onClick={() => setAddColumnModalOpen(true)}
-              className="gap-2 shadow-sm"
-              size="sm"
-            >
+            <Button onClick={() => setAddColumnModalOpen(true)} className="gap-2 shadow-sm" size="sm">
               <Columns3 className="h-4 w-4" />
               Add Column
             </Button>
-            <Button
-              onClick={() => handleAddTask("todo")}
-              className="gap-2 shadow-sm"
-              size="sm"
-            >
+            <Button onClick={() => handleAddTask("todo")} className="gap-2 shadow-sm" size="sm">
               <Plus className="h-4 w-4" />
               Add Task
             </Button>
           </div>
         </div>
 
-        {/* ── Filters Bar ── */}
         <div className="px-6 py-3 border-b bg-muted/30 shrink-0">
           <TaskFiltersBar />
         </div>
 
-        {/* ── ADDITION 4: Horizontal scroll slider ─────── */}
         {showSlider && (
           <div className="px-6 pt-2 pb-1 bg-background shrink-0">
-            {" "}
-            {/* ← pb-3 → pt-2 pb-1 */}
             <div className="relative flex items-center h-4">
-              {/* Track */}
               <div className="w-full h-0.5 rounded-full bg-border">
                 <div
                   className="h-full rounded-full bg-primary transition-none"
                   style={{ width: `${scrollPercent}%` }}
                 />
               </div>
-
-              {/* Thumb */}
               <div
                 className="absolute h-3 w-3 rounded-full bg-primary shadow-sm border-2 border-background pointer-events-none"
                 style={{ left: `calc(${scrollPercent}% - 6px)` }}
               />
-
-              {/* Invisible input */}
               <input
                 type="range"
                 min={0}
@@ -265,7 +236,7 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
             </div>
           </div>
         )}
-        {/* ── Kanban columns ── */}
+
         <div
           ref={scrollContainerRef}
           className={`flex-1 overflow-x-auto ${showSlider ? "pt-2 px-6 pb-6" : "p-6"}`}
@@ -321,7 +292,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
 
       <StatsSidebar />
 
-      {/* ── Modals ── */}
       <AddTaskModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}

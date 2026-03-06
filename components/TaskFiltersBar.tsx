@@ -1,4 +1,3 @@
-// components/TaskFiltersBar.tsx
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/redux";
@@ -32,7 +31,6 @@ export function TaskFiltersBar({ className }: TaskFiltersBarProps) {
   return (
     <div className={cn("flex items-center gap-2 flex-wrap", className)}>
 
-      {/* ── Search ── */}
       <div className="relative flex-1 min-w-48">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <Input
@@ -43,7 +41,6 @@ export function TaskFiltersBar({ className }: TaskFiltersBarProps) {
         />
       </div>
 
-      {/* ── Status Filter ── */}
       <Select
         value={filters.status}
         onValueChange={(value) =>
@@ -61,7 +58,6 @@ export function TaskFiltersBar({ className }: TaskFiltersBarProps) {
         </SelectContent>
       </Select>
 
-      {/* ── Priority Filter ── */}
       <Select
         value={filters.priority}
         onValueChange={(value) =>
@@ -79,7 +75,6 @@ export function TaskFiltersBar({ className }: TaskFiltersBarProps) {
         </SelectContent>
       </Select>
 
-      {/* ── Clear Filters ── */}
       {isFiltered && (
         <Button
           variant="ghost"

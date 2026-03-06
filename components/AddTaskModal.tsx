@@ -1,4 +1,3 @@
-// components/AddTaskModal.tsx
 "use client";
 
 import { useState } from "react";
@@ -76,7 +75,6 @@ export function AddTaskModal({
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="w-full max-w-2xl p-0 gap-0 overflow-hidden">
 
-        {/* ── Header ── */}
         <div className="bg-linear-to-br from-primary/10 via-primary/5 to-transparent border-b px-6 py-5">
           <DialogHeader>
             <div className="flex items-center gap-3">
@@ -95,42 +93,26 @@ export function AddTaskModal({
           </DialogHeader>
         </div>
 
-        {/* ── Scrollable form body ── */}
         <div className="overflow-y-auto max-h-[70vh] px-6 py-6 space-y-6">
 
-          {/* ── Title ── */}
           <div className="space-y-2">
-            <Label
-              htmlFor="modal-title"
-              className="flex items-center gap-2 text-sm font-semibold"
-            >
+            <Label htmlFor="modal-title" className="flex items-center gap-2 text-sm font-semibold">
               <Type className="h-3.5 w-3.5 text-muted-foreground" />
-              Title
-              <span className="text-destructive">*</span>
+              Title <span className="text-destructive">*</span>
             </Label>
             <Input
               id="modal-title"
               placeholder="What needs to be done?"
               value={values.title}
               onChange={(e) => handleChange("title", e.target.value)}
-              className={cn(
-                "h-11 text-sm",
-                errors.title &&
-                  "border-destructive focus-visible:ring-destructive",
-              )}
+              className={cn("h-11 text-sm", errors.title && "border-destructive focus-visible:ring-destructive")}
               autoFocus
             />
-            {errors.title && (
-              <p className="text-xs text-destructive">⚠ {errors.title}</p>
-            )}
+            {errors.title && <p className="text-xs text-destructive">⚠ {errors.title}</p>}
           </div>
 
-          {/* ── Description ── */}
           <div className="space-y-2">
-            <Label
-              htmlFor="modal-description"
-              className="flex items-center gap-2 text-sm font-semibold"
-            >
+            <Label htmlFor="modal-description" className="flex items-center gap-2 text-sm font-semibold">
               <AlignLeft className="h-3.5 w-3.5 text-muted-foreground" />
               Description
             </Label>
@@ -144,68 +126,50 @@ export function AddTaskModal({
             />
           </div>
 
-          {/* ── Priority and Status — side by side ── */}
           <div className="grid grid-cols-2 gap-5">
-
-            {/* ✅ Priority dropdown — uses values.priority */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-semibold">
                 <Flag className="h-3.5 w-3.5 text-muted-foreground" />
                 Priority
               </Label>
-              <Select
-                value={values.priority}
-                onValueChange={(v) =>
-                  handleChange("priority", v as TaskPriority)
-                }
-              >
+              <Select value={values.priority} onValueChange={(v) => handleChange("priority", v as TaskPriority)}>
                 <SelectTrigger className="h-11 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                      Low
+                      <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />Low
                     </div>
                   </SelectItem>
                   <SelectItem value="medium">
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
-                      Medium
+                      <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />Medium
                     </div>
                   </SelectItem>
                   <SelectItem value="high">
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />
-                      High
+                      <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />High
                     </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* ✅ Status dropdown — dynamic from Redux columns */}
             <div className="space-y-2">
               <Label className="flex items-center gap-2 text-sm font-semibold">
                 <LayoutGrid className="h-3.5 w-3.5 text-muted-foreground" />
                 Status
               </Label>
-              <Select
-                value={values.status}
-                onValueChange={(v) => handleChange("status", v)}
-              >
+              <Select value={values.status} onValueChange={(v) => handleChange("status", v)}>
                 <SelectTrigger className="h-11 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* ✅ All columns including custom ones */}
                   {columns.map((col) => (
                     <SelectItem key={col.id} value={col.id}>
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`h-2 w-2 rounded-full shrink-0 ${col.color}`}
-                        />
+                        <span className={`h-2 w-2 rounded-full shrink-0 ${col.color}`} />
                         {col.label}
                       </div>
                     </SelectItem>
@@ -215,98 +179,58 @@ export function AddTaskModal({
             </div>
           </div>
 
-          {/* ── Due Date and Assigned To — side by side ── */}
           <div className="grid grid-cols-2 gap-5">
-
-            {/* Due Date */}
             <div className="space-y-2">
-              <Label
-                htmlFor="modal-dueDate"
-                className="flex items-center gap-2 text-sm font-semibold"
-              >
+              <Label htmlFor="modal-dueDate" className="flex items-center gap-2 text-sm font-semibold">
                 <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                Due Date
-                <span className="text-destructive">*</span>
+                Due Date <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="modal-dueDate"
                 type="date"
                 value={values.dueDate}
                 onChange={(e) => handleChange("dueDate", e.target.value)}
-                className={cn(
-                  "h-11 text-sm",
-                  errors.dueDate &&
-                    "border-destructive focus-visible:ring-destructive",
-                )}
+                 min={new Date().toISOString().split("T")[0]} 
+                className={cn("h-11 text-sm", errors.dueDate && "border-destructive focus-visible:ring-destructive")}
               />
-              {errors.dueDate && (
-                <p className="text-xs text-destructive">⚠ {errors.dueDate}</p>
-              )}
+              {errors.dueDate && <p className="text-xs text-destructive">⚠ {errors.dueDate}</p>}
             </div>
 
-            {/* Assigned To */}
             <div className="space-y-2">
-              <Label
-                htmlFor="modal-assignedTo"
-                className="flex items-center gap-2 text-sm font-semibold"
-              >
+              <Label htmlFor="modal-assignedTo" className="flex items-center gap-2 text-sm font-semibold">
                 <User className="h-3.5 w-3.5 text-muted-foreground" />
-                Assigned To
-                <span className="text-destructive">*</span>
+                Assigned To <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="modal-assignedTo"
                 placeholder="Enter person's name"
                 value={values.assignedTo}
                 onChange={(e) => handleChange("assignedTo", e.target.value)}
-                className={cn(
-                  "h-11 text-sm",
-                  errors.assignedTo &&
-                    "border-destructive focus-visible:ring-destructive",
-                )}
+                className={cn("h-11 text-sm", errors.assignedTo && "border-destructive focus-visible:ring-destructive")}
               />
-              {errors.assignedTo && (
-                <p className="text-xs text-destructive">
-                  ⚠ {errors.assignedTo}
-                </p>
-              )}
+              {errors.assignedTo && <p className="text-xs text-destructive">⚠ {errors.assignedTo}</p>}
             </div>
           </div>
 
-          {/* ── Tags ── */}
           <div className="space-y-2">
-            <Label
-              htmlFor="modal-tags"
-              className="flex items-center gap-2 text-sm font-semibold"
-            >
+            <Label htmlFor="modal-tags" className="flex items-center gap-2 text-sm font-semibold">
               <Tag className="h-3.5 w-3.5 text-muted-foreground" />
               Tags
-              <span className="text-xs font-normal text-muted-foreground">
-                (comma separated)
-              </span>
+              <span className="text-xs font-normal text-muted-foreground">(comma separated)</span>
             </Label>
             <Input
               id="modal-tags"
               placeholder="e.g. bug, frontend, urgent"
               value={values.tags.join(", ")}
               onChange={(e) =>
-                handleChange(
-                  "tags",
-                  e.target.value
-                    .split(",")
-                    .map((t) => t.trim())
-                    .filter(Boolean),
-                )
+                handleChange("tags", e.target.value.split(",").map((t) => t.trim()).filter(Boolean))
               }
               className="h-11 text-sm"
             />
             {values.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {values.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded-md font-medium"
-                  >
+                  <span key={tag} className="text-xs bg-muted text-muted-foreground px-2.5 py-1 rounded-md font-medium">
                     {tag}
                   </span>
                 ))}
@@ -315,13 +239,8 @@ export function AddTaskModal({
           </div>
         </div>
 
-        {/* ── Footer ── */}
         <div className="border-t bg-muted/20 px-6 py-4 flex gap-3">
-          <Button
-            onClick={onSubmit}
-            disabled={isSubmitting}
-            className="flex-1 h-11 font-semibold shadow-sm text-sm"
-          >
+          <Button onClick={onSubmit} disabled={isSubmitting} className="flex-1 h-11 font-semibold shadow-sm text-sm">
             {isSubmitting ? (
               <span className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -334,12 +253,7 @@ export function AddTaskModal({
               </span>
             )}
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isSubmitting}
-            className="h-11 px-8 text-sm"
-          >
+          <Button variant="outline" onClick={handleClose} disabled={isSubmitting} className="h-11 px-8 text-sm">
             Cancel
           </Button>
         </div>

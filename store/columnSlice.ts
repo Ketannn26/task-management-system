@@ -1,8 +1,6 @@
-// store/columnSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { KanbanColumn } from "@/types/task";
 
-// ── Predefined color themes for new columns ───────────────
 export const COLUMN_COLOR_OPTIONS = [
   {
     color: "bg-violet-500",
@@ -81,31 +79,28 @@ const columnSlice = createSlice({
   name: "columns",
   initialState,
   reducers: {
-    // ── Add new column ──────────────────────────────────
     addColumn(state, action: PayloadAction<Omit<KanbanColumn, "id">>) {
       const id = `custom-${Date.now()}`;
       state.columns.push({ id, ...action.payload });
     },
 
-    // ── Rename existing column ──────────────────────────
     renameColumn(state, action: PayloadAction<{ id: string; label: string }>) {
       const col = state.columns.find((c) => c.id === action.payload.id);
       if (col) col.label = action.payload.label;
     },
-    reorderColumns: (
-      state,
-      action: PayloadAction<{ fromIndex: number; toIndex: number }>,
-    ) => {
+
+    reorderColumns(state, action: PayloadAction<{ fromIndex: number; toIndex: number }>) {
       const { fromIndex, toIndex } = action.payload;
       const updated = [...state.columns];
       const [moved] = updated.splice(fromIndex, 1);
       updated.splice(toIndex, 0, moved);
       state.columns = updated;
     },
+
     resetColumns(state) {
       state.columns = DEFAULT_COLUMNS;
     },
-    // ── Delete column (only non-default) ────────────────
+
     deleteColumn(state, action: PayloadAction<string>) {
       const col = state.columns.find((c) => c.id === action.payload);
       if (col && !col.isDefault) {

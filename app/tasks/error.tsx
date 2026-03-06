@@ -1,5 +1,4 @@
-// app/tasks/error.tsx
-"use client"; // error files must be client components
+"use client";
 
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,6 @@ interface ErrorPageProps {
 
 export default function TasksError({ error, reset }: ErrorPageProps) {
   useEffect(() => {
-    // Log error to console for debugging
     console.error("Tasks page error:", error);
   }, [error]);
 

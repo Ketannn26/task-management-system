@@ -1,19 +1,14 @@
-// components/KanbanColumn.tsx
 "use client";
 
 import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import { useDroppable } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  useSortable,                // ← ADD
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities"; // ← ADD
+import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Task, KanbanColumn as KanbanColumnType } from "@/types/task";
 import { KanbanCard } from "@/components/KanbanCard";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { cn } from "@/lib/utils";
-import { Pencil, Trash2, Check, X, GripVertical } from "lucide-react"; // ← ADD GripVertical
+import { Pencil, Trash2, Check, X, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAppDispatch } from "@/hooks/redux";
@@ -36,19 +31,11 @@ interface KanbanColumnProps {
   className?: string;
 }
 
-export function KanbanColumn({
-  column,
-  tasks,
-  onEdit,
-  onDelete,
-  onViewTask,
-  className,
-}: KanbanColumnProps) {
+export function KanbanColumn({ column, tasks, onEdit, onDelete, onViewTask, className }: KanbanColumnProps) {
   const dispatch = useAppDispatch();
   const { setNodeRef: setDropRef, isOver } = useDroppable({ id: column.id });
   const mounted = useIsMounted();
 
-  // ── ADD: useSortable for column reordering ──────────────
   const {
     attributes,
     listeners,
@@ -58,14 +45,13 @@ export function KanbanColumn({
     isDragging,
   } = useSortable({
     id: column.id,
-    data: { type: "column" }, // ← tells KanbanBoard this is a column drag
+    data: { type: "column" },
   });
 
   const sortStyle = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-  // ────────────────────────────────────────────────────────
 
   const [isRenaming, setIsRenaming] = useState(false);
   const [renameValue, setRenameValue] = useState(column.label);
@@ -101,13 +87,12 @@ export function KanbanColumn({
 
   return (
     <>
-      {/* ── CHANGE: wrap in sortable ref div ── */}
       <div
         ref={setSortRef}
         style={sortStyle}
         {...attributes}
         className={cn(isDragging && "opacity-40")}
-        suppressHydrationWarning  
+        suppressHydrationWarning
       >
         <div
           className={cn(
@@ -119,11 +104,9 @@ export function KanbanColumn({
             className,
           )}
         >
-          {/* ── Column Header ── */}
           <div className="flex items-center justify-between px-4 py-3 group/header">
             <div className="flex items-center gap-2.5 flex-1 min-w-0">
 
-              {/* ── ADD: drag handle — only on header, not cards ── */}
               {!isRenaming && (
                 <div
                   {...listeners}
@@ -134,15 +117,8 @@ export function KanbanColumn({
                 </div>
               )}
 
-              {/* Colored dot */}
-              <span
-                className={cn(
-                  "h-2.5 w-2.5 rounded-full shadow-sm shrink-0",
-                  column.color,
-                )}
-              />
+              <span className={cn("h-2.5 w-2.5 rounded-full shadow-sm shrink-0", column.color)} />
 
-              {/* ── Inline rename input OR label ── */}
               {isRenaming ? (
                 <div className="flex items-center gap-1 flex-1 min-w-0">
                   <Input
@@ -188,7 +164,6 @@ export function KanbanColumn({
               )}
             </div>
 
-            {/* ── Header action buttons ── */}
             {!isRenaming && (
               <div className="flex items-center gap-0.5 shrink-0">
                 <Button
@@ -215,34 +190,24 @@ export function KanbanColumn({
             )}
           </div>
 
-          {/* ── Colored top accent line ── */}
           <div className={cn("h-0.5 mx-4 rounded-full opacity-60", column.color)} />
 
-          {/* ── Task list ── */}
-          <div
-            ref={setDropRef}
-            className="flex flex-col gap-2.5 p-3 flex-1 min-h-32"
-          >
-            <SortableContext
-              items={tasks.map((t) => t.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {mounted &&
-                tasks.map((task) => (
-                  <KanbanCard
-                    key={task.id}
-                    task={task}
-                    onEdit={onEdit}
-                    onDelete={onDelete}
-                    onView={onViewTask}
-                  />
-                ))}
+          <div ref={setDropRef} className="flex flex-col gap-2.5 p-3 flex-1 min-h-32">
+            <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+              {mounted && tasks.map((task) => (
+                <KanbanCard
+                  key={task.id}
+                  task={task}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onView={onViewTask}
+                />
+              ))}
             </SortableContext>
           </div>
         </div>
       </div>
 
-      {/* ── Delete confirm dialog ── */}
       <ConfirmDialog
         open={showDeleteConfirm}
         title="Delete Column"

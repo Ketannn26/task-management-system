@@ -1,4 +1,3 @@
-// components/LoadingSpinner.tsx
 import { cn } from "@/lib/utils";
 
 interface LoadingSpinnerProps {
@@ -7,40 +6,22 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-// Map size to Tailwind width/height classes
 const sizeStyles: Record<"sm" | "md" | "lg", string> = {
   sm: "h-4 w-4 border-2",
   md: "h-8 w-8 border-2",
   lg: "h-12 w-12 border-4",
 };
 
-export function LoadingSpinner({
-  size = "md",
-  label,
-  className,
-}: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = "md", label, className }: LoadingSpinnerProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center gap-3",
-        className
-      )}
-    >
-      {/* The spinning circle */}
+    <div className={cn("flex flex-col items-center justify-center gap-3", className)}>
       <div
-        className={cn(
-          "animate-spin rounded-full border-muted border-t-primary",
-          sizeStyles[size]
-        )}
+        className={cn("animate-spin rounded-full border-muted border-t-primary", sizeStyles[size])}
         role="status"
         aria-label={label ?? "Loading"}
       />
-
-      {/* Optional text label below spinner */}
       {label && (
-        <p className="text-sm text-muted-foreground animate-pulse">
-          {label}
-        </p>
+        <p className="text-sm text-muted-foreground animate-pulse">{label}</p>
       )}
     </div>
   );

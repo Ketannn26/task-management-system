@@ -1,4 +1,3 @@
-// components/ConfirmDialog.tsx
 import {
   Dialog,
   DialogContent,
@@ -40,17 +39,10 @@ export function ConfirmDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
-
         <DialogFooter className="flex gap-2 sm:justify-end">
-          {/* Cancel button */}
-          <Button
-            variant="outline"
-            onClick={onCancel}
-          >
+          <Button variant="outline" onClick={onCancel}>
             {cancelLabel}
           </Button>
-
-          {/* Confirm button — red if destructive */}
           <Button
             variant={destructive ? "destructive" : "default"}
             onClick={onConfirm}

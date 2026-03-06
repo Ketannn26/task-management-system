@@ -1,4 +1,3 @@
-// components/AddColumnModal.tsx
 "use client";
 
 import { useState } from "react";
@@ -57,7 +56,6 @@ export function AddColumnModal({ open, onClose }: AddColumnModalProps) {
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
       <DialogContent className="w-full max-w-md p-0 gap-0 overflow-hidden">
 
-        {/* ── Header ── */}
         <div className="bg-linear-to-br from-primary/10 via-primary/5 to-transparent border-b px-6 py-5">
           <DialogHeader>
             <div className="flex items-center gap-3">
@@ -76,10 +74,7 @@ export function AddColumnModal({ open, onClose }: AddColumnModalProps) {
           </DialogHeader>
         </div>
 
-        {/* ── Body ── */}
         <div className="px-6 py-6 space-y-5">
-
-          {/* Column name */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold">
               Column Name <span className="text-destructive">*</span>
@@ -98,12 +93,9 @@ export function AddColumnModal({ open, onClose }: AddColumnModalProps) {
               autoFocus
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             />
-            {error && (
-              <p className="text-xs text-destructive">⚠ {error}</p>
-            )}
+            {error && <p className="text-xs text-destructive">⚠ {error}</p>}
           </div>
 
-          {/* Color picker */}
           <div className="space-y-2">
             <Label className="text-sm font-semibold">Column Color</Label>
             <div className="flex gap-2 flex-wrap">
@@ -121,8 +113,6 @@ export function AddColumnModal({ open, onClose }: AddColumnModalProps) {
                 />
               ))}
             </div>
-
-            {/* Preview */}
             <div
               className={cn(
                 "mt-3 rounded-xl border px-4 py-2.5 flex items-center gap-2",
@@ -141,10 +131,8 @@ export function AddColumnModal({ open, onClose }: AddColumnModalProps) {
               </span>
             </div>
           </div>
-
         </div>
 
-        {/* ── Footer ── */}
         <div className="border-t bg-muted/20 px-6 py-4 flex gap-3">
           <Button
             onClick={handleSubmit}

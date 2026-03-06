@@ -1,4 +1,3 @@
-// components/KanbanCard.tsx
 "use client";
 
 import { useState, useRef } from "react";
@@ -43,35 +42,19 @@ const priorityConfig: Record<Task["priority"], { label: string; className: strin
   },
 };
 
-export function KanbanCard({
-  task,
-  onEdit,
-  onDelete,
-  onView,
-  className,
-}: KanbanCardProps) {
+export function KanbanCard({ task, onEdit, onDelete, onView, className }: KanbanCardProps) {
   const [showConfirm, setShowConfirm] = useState(false);
-
-  // ── Track mouse position to distinguish click vs drag ──
   const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
   const isDragRef = useRef(false);
 
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
   };
 
-  const isOverdue =
-    new Date(task.dueDate) < new Date() && task.status !== "done";
+  const isOverdue = new Date(task.dueDate) < new Date() && task.status !== "done";
 
   const formattedDate = new Date(task.dueDate).toLocaleDateString("en-US", {
     month: "short",
@@ -81,7 +64,6 @@ export function KanbanCard({
 
   const priority = priorityConfig[task.priority];
 
-  // ── Only open modal if mouse didn't move (real click, not drag) ──
   const handleMouseDown = (e: React.MouseEvent) => {
     mouseDownPos.current = { x: e.clientX, y: e.clientY };
     isDragRef.current = false;
@@ -91,17 +73,11 @@ export function KanbanCard({
     if (!mouseDownPos.current) return;
     const dx = Math.abs(e.clientX - mouseDownPos.current.x);
     const dy = Math.abs(e.clientY - mouseDownPos.current.y);
-    // If mouse moved more than 5px, treat as drag not click
-    if (dx > 5 || dy > 5) {
-      isDragRef.current = true;
-    }
+    if (dx > 5 || dy > 5) isDragRef.current = true;
   };
 
   const handleClick = () => {
-    // Only open modal if it was a genuine click (no drag movement)
-    if (!isDragRef.current) {
-      onView(task);
-    }
+    if (!isDragRef.current) onView(task);
     isDragRef.current = false;
     mouseDownPos.current = null;
   };
@@ -119,35 +95,21 @@ export function KanbanCard({
           "transition-all duration-200",
           "hover:shadow-md hover:-translate-y-0.5",
           "cursor-pointer",
-          isOverdue
-            ? "border-red-300 dark:border-red-800"
-            : "border-border/60",
+          isOverdue ? "border-red-300 dark:border-red-800" : "border-border/60",
           isDragging && "opacity-40 shadow-lg",
           className
         )}
       >
-        {/* ── Left accent border based on priority ── */}
-        <div
-          className={cn(
-            "absolute left-0 top-3 bottom-3 w-0.5 rounded-full",
-            priority.dot
-          )}
-        />
+        <div className={cn("absolute left-0 top-3 bottom-3 w-0.5 rounded-full", priority.dot)} />
 
         <div className="p-3.5 pl-4">
-
-          {/* ── Top row — title + drag handle ── */}
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="flex items-start gap-1.5 flex-1 min-w-0">
-              {isOverdue && (
-                <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0 mt-0.5" />
-              )}
+              {isOverdue && <AlertTriangle className="h-3.5 w-3.5 text-red-500 shrink-0 mt-0.5" />}
               <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2">
                 {task.title}
               </h3>
             </div>
-
-            {/* ── Drag handle ── */}
             <div
               {...attributes}
               {...listeners}
@@ -158,25 +120,17 @@ export function KanbanCard({
             </div>
           </div>
 
-          {/* ── Description ── */}
           {task.description && (
             <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">
               {task.description}
             </p>
           )}
 
-          {/* ── Priority + Overdue badges ── */}
           <div className="flex items-center gap-1.5 mb-3 flex-wrap">
-            <span
-              className={cn(
-                "inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border",
-                priority.className
-              )}
-            >
+            <span className={cn("inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border", priority.className)}>
               <span className={cn("h-1.5 w-1.5 rounded-full", priority.dot)} />
               {priority.label}
             </span>
-
             {isOverdue && (
               <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border bg-red-50 text-red-600 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800">
                 <Clock className="h-3 w-3" />
@@ -185,14 +139,10 @@ export function KanbanCard({
             )}
           </div>
 
-          {/* ── Tags ── */}
           {task.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-3">
               {task.tags.slice(0, 3).map((tag) => (
-                <span
-                  key={tag}
-                  className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-md font-medium"
-                >
+                <span key={tag} className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-md font-medium">
                   {tag}
                 </span>
               ))}
@@ -204,39 +154,26 @@ export function KanbanCard({
             </div>
           )}
 
-          {/* ── Footer ── */}
           <div className="flex items-center justify-between pt-2.5 border-t border-border/40">
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold uppercase">
                 {task.assignedTo ? task.assignedTo[0] : "?"}
               </div>
-              <span className="font-medium">
-                {task.assignedTo || "Unassigned"}
-              </span>
+              <span className="font-medium">{task.assignedTo || "Unassigned"}</span>
             </div>
-
-            <div
-              className={cn(
-                "flex items-center gap-1 text-xs font-medium",
-                isOverdue ? "text-red-500" : "text-muted-foreground"
-              )}
-            >
+            <div className={cn("flex items-center gap-1 text-xs font-medium", isOverdue ? "text-red-500" : "text-muted-foreground")}>
               <CalendarDays className="h-3 w-3" />
               {formattedDate}
             </div>
           </div>
         </div>
 
-        {/* ── Hover action buttons ── */}
         <div className="absolute top-2 right-8 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button
             variant="ghost"
             size="icon"
             className="h-6 w-6 rounded-lg bg-background/90 shadow-sm border border-border/50 hover:bg-background"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(task);
-            }}
+            onClick={(e) => { e.stopPropagation(); onEdit(task); }}
           >
             <Pencil className="h-3 w-3" />
           </Button>
@@ -244,10 +181,7 @@ export function KanbanCard({
             variant="ghost"
             size="icon"
             className="h-6 w-6 rounded-lg bg-background/90 shadow-sm border border-border/50 hover:bg-background hover:text-destructive"
-            onClick={(e) => {
-              e.stopPropagation();
-              setShowConfirm(true);
-            }}
+            onClick={(e) => { e.stopPropagation(); setShowConfirm(true); }}
           >
             <Trash2 className="h-3 w-3" />
           </Button>
@@ -260,10 +194,7 @@ export function KanbanCard({
         description={`Are you sure you want to delete "${task.title}"? This cannot be undone.`}
         confirmLabel="Delete"
         destructive
-        onConfirm={() => {
-          onDelete(task.id);
-          setShowConfirm(false);
-        }}
+        onConfirm={() => { onDelete(task.id); setShowConfirm(false); }}
         onCancel={() => setShowConfirm(false)}
       />
     </>

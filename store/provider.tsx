@@ -1,5 +1,4 @@
-// store/provider.tsx
-"use client"; // ← This must be a client component
+"use client";
 
 import { Provider } from "react-redux";
 import { store } from "./index";

@@ -1,33 +1,26 @@
-// hooks/useTaskForm.ts
 import { useState, useCallback } from "react";
-import { TaskPriority } from "@/types/task"; // ← remove TaskStatus import
+import { TaskPriority } from "@/types/task";
 
-// The shape of our form values
 type TaskFormValues = {
   title: string;
   description: string;
   priority: TaskPriority;
-  status: string; // ← was TaskStatus, now plain string
+  status: string;
   dueDate: string;
   tags: string[];
   assignedTo: string;
 };
 
-// Validation errors — each field can have an error message or undefined
 type TaskFormErrors = Partial<Record<keyof TaskFormValues, string>>;
 
 interface UseTaskFormReturn {
   values: TaskFormValues;
   errors: TaskFormErrors;
-  handleChange: <K extends keyof TaskFormValues>(
-    field: K,
-    value: TaskFormValues[K],
-  ) => void;
+  handleChange: <K extends keyof TaskFormValues>(field: K, value: TaskFormValues[K]) => void;
   handleSubmit: (onSubmit: (values: TaskFormValues) => void) => void;
   reset: () => void;
 }
 
-// Default empty form values
 const defaultValues: TaskFormValues = {
   title: "",
   description: "",
@@ -38,9 +31,7 @@ const defaultValues: TaskFormValues = {
   assignedTo: "",
 };
 
-export function useTaskForm(
-  initialValues?: Partial<TaskFormValues>,
-): UseTaskFormReturn {
+export function useTaskForm(initialValues?: Partial<TaskFormValues>): UseTaskFormReturn {
   const [values, setValues] = useState<TaskFormValues>({
     ...defaultValues,
     ...initialValues,
@@ -48,7 +39,6 @@ export function useTaskForm(
 
   const [errors, setErrors] = useState<TaskFormErrors>({});
 
-  // ── Update a single field ─────────────────────────────────
   const handleChange = useCallback(
     <K extends keyof TaskFormValues>(field: K, value: TaskFormValues[K]) => {
       setValues((prev) => ({ ...prev, [field]: value }));
@@ -57,7 +47,6 @@ export function useTaskForm(
     [],
   );
 
-  // ── Validate the form ─────────────────────────────────────
   const validate = useCallback((): boolean => {
     const newErrors: TaskFormErrors = {};
 
@@ -79,7 +68,6 @@ export function useTaskForm(
     return Object.keys(newErrors).length === 0;
   }, [values]);
 
-  // ── Handle form submission ────────────────────────────────
   const handleSubmit = useCallback(
     (onSubmit: (values: TaskFormValues) => void) => {
       if (validate()) {
@@ -89,17 +77,10 @@ export function useTaskForm(
     [validate, values],
   );
 
-  // ── Reset form to initial values ──────────────────────────
   const reset = useCallback(() => {
     setValues({ ...defaultValues, ...initialValues });
     setErrors({});
   }, [initialValues]);
 
-  return {
-    values,
-    errors,
-    handleChange,
-    handleSubmit,
-    reset,
-  };
+  return { values, errors, handleChange, handleSubmit, reset };
 }

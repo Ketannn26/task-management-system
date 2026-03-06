@@ -1,4 +1,3 @@
-// app/tasks/layout.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -16,9 +15,5 @@ export default function TasksLayout({
     dispatch(fetchTasks());
   }, [dispatch]);
 
-  return (
-    <div className="flex flex-col flex-1">
-      {children}
-    </div>
-  );
+  return <div className="flex flex-col flex-1">{children}</div>;
 }

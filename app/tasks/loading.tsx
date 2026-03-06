@@ -1,8 +1,6 @@
-// app/tasks/loading.tsx
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// A single skeleton card
 function SkeletonCard() {
   return (
     <Card>
@@ -33,7 +31,6 @@ export default function TasksLoading() {
   return (
     <div className="p-6">
       <Skeleton className="h-8 w-32 mb-6" />
-      {/* Show 6 skeleton cards in a grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <SkeletonCard key={i} />

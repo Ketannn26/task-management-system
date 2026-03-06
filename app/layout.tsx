@@ -1,4 +1,3 @@
-// app/layout.tsx
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
@@ -6,7 +5,6 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { ReduxProvider } from "@/store/provider";
 import { Navbar } from "@/components/Navbar";
 
-// ✅ Outfit is modern, clean, and much more characterful than Inter
 const outfit = Outfit({
   subsets: ["latin"],
   variable: "--font-outfit",
