@@ -31,6 +31,7 @@ import { TaskDetailModal } from "@/components/TaskDetailModal";
 import { Button } from "@/components/ui/button";
 import { Plus, Columns3 } from "lucide-react";
 import { store } from "@/store/index";
+import type { RootState } from "@/store/index";
 
 function useIsMounted() {
   return useSyncExternalStore(
@@ -64,7 +65,6 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
   const [taskToView, setTaskToView] = useState<Task | null>(null);
   const [addColumnModalOpen, setAddColumnModalOpen] = useState(false);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     dispatch(setTasks(initialTasks));
     dispatch(resetColumns());
@@ -113,7 +113,9 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
       setActiveColumnId(active.id as string);
       return;
     }
-    const task = store.getState().tasks.tasks.find((t) => t.id === active.id);
+    const task = (store.getState() as RootState).tasks.tasks.find(
+      (t: Task) => t.id === active.id
+    );
     if (task) setActiveTask(task);
   };
 
@@ -134,15 +136,15 @@ export function KanbanBoard({ initialTasks }: KanbanBoardProps) {
 
     const taskId = active.id as string;
     const overId = over.id as string;
-    const allTasks = store.getState().tasks.tasks;
-    const draggedTask = allTasks.find((t) => t.id === taskId);
+    const allTasks = (store.getState() as RootState).tasks.tasks;
+    const draggedTask = allTasks.find((t: Task) => t.id === taskId);
     if (!draggedTask) return;
 
     let newStatus: string;
     if (columns.some((col) => col.id === overId)) {
       newStatus = overId;
     } else {
-      const overTask = allTasks.find((t) => t.id === overId);
+      const overTask = allTasks.find((t: Task) => t.id === overId);
       if (!overTask) return;
       newStatus = overTask.status;
     }
