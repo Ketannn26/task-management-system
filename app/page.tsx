@@ -16,7 +16,7 @@ export default function HomePage() {
           <div className="space-y-8">
             <div className="space-y-3">
               <h1 className="flex gap-1 items-center text-5xl font-bold tracking-tight">
-                <span>Cetnripe</span>
+                <span>Centripe</span>
                 <span>Flow</span>
               </h1>
               <p className="text-base text-muted-foreground leading-relaxed">
