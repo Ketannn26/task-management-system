@@ -13,11 +13,10 @@ export default function HomePage() {
       <main className="flex-1 flex items-start justify-center px-6 pt-12">
         <div className="max-w-5xl w-full mx-auto grid lg:grid-cols-2 gap-8 items-center py-8">
 
-          {/* ── LEFT ── */}
           <div className="space-y-8">
             <div className="space-y-3">
               <h1 className="flex gap-1 items-center text-5xl font-bold tracking-tight">
-                <span>Cetripe</span>
+                <span>Cetnripe</span>
                 <span>Flow</span>
               </h1>
               <p className="text-base text-muted-foreground leading-relaxed">
@@ -52,7 +51,6 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* ── RIGHT — Mini board preview ── */}
           <div className="hidden lg:block">
             <div className="rounded-2xl border bg-card shadow-xl overflow-hidden">
               <div className="px-4 py-3 border-b bg-muted/30 flex items-center justify-between">

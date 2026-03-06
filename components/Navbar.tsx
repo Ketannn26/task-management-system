@@ -29,7 +29,7 @@ export function Navbar() {
             <Kanban className="h-4 w-4" />
           </div>
           <div className="flex gap-1 items-center text-xl">
-            <span className="text-xl font-bold">Cetripe</span>
+            <span className="text-xl font-bold">Centripe</span>
             <span className="text-xl">Flow</span>
           </div>
         </Link>
